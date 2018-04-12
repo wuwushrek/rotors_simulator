@@ -34,8 +34,30 @@ if(${gazebo_VERSION_MAJOR} GREATER 2)
       DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
       )
     add_custom_target(sdf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/iris/iris.sdf)
+
+    message(STATUS "Building crazyflie.sdf.")
+    
+    set(enable_mavlink_interface "false")
+    set(enable_ground_truth "false")
+    set(enable_logging "false")
+    set(enable_camera "false")
+    set(enable_wind "false")
+    
+    # Creates shell commands to generate .sdf file
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
+      COMMAND python ${scripts_dir}/xacro.py -o  ${rotors_description_dir}/urdf/crazyflie_base.urdf  ${rotors_description_dir}/urdf/crazyflie_base.xacro enable_mavlink_interface:=${enable_mavlink_interface} enable_ground_truth:=${enable_ground_truth} enable_wind:=${enable_wind} enable_logging:=${enable_logging} rotors_description_dir:=${rotors_description_dir}
+      COMMAND gz sdf -p  ${rotors_description_dir}/urdf/crazyflie_base.urdf >> ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf
+      COMMAND rm -f ${rotors_description_dir}/urdf/crazyflie_base.urdf
+      DEPENDS ${rotors_description_dir}/urdf/crazyflie.xacro
+      DEPENDS ${rotors_description_dir}/urdf/crazyflie_base.xacro
+      DEPENDS ${rotors_description_dir}/urdf/component_snippets.xacro
+      )
+    add_custom_target(sdf ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/crazyflie/crazyflie.sdf)
+
 else()
-  message(STATUS "Gazebo version is less than 3, cannot generate iris.sdf (gz tool not available).")
+  message(STATUS "Gazebo version is less than 3, cannot generate iris/crazyflie.sdf (gz tool not available).")
 endif()
 
 if(NO_ROS)
